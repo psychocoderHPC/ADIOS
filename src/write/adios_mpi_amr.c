@@ -1624,8 +1624,8 @@ int adios_MPI_Irecv(void *buf, uint64_t count, int source,
     {
         int temp_count = (int) count;
         MPI_Irecv (buf, temp_count, MPI_BYTE, source, tag, comm, requests+n);
+        n++;
     }
-    n++;
 
     return n;
 }
@@ -1774,7 +1774,8 @@ void adios_mpi_amr_bg_close (struct adios_file_struct * fd
                         if (i + 1 < new_group_size)
                         {
                             START_TIMER (ADIOS_TIMER_COMM);
-                            MPI_Waitall (nMPIrequests, requests, statuses);
+                            if(nMPIrequests)
+                                MPI_Waitall (nMPIrequests, requests, statuses);
                             STOP_TIMER (ADIOS_TIMER_COMM);
                             // swap receive and aggregate buffers, so we can write out the just received PG while getting another one
                             void *tmp = aggr_buff;
@@ -1806,8 +1807,8 @@ void adios_mpi_amr_bg_close (struct adios_file_struct * fd
                                 // Send my data to downstream rank
                                 adios_MPI_Send (fd->buffer, pg_size, new_rank - 1
                                          ,0, md->g_comm1);
-
-                            MPI_Waitall(nMPIrequests, requests, statuses);
+                            if(nMPIrequests)
+                                MPI_Waitall(nMPIrequests, requests, statuses);
                             // Send it to downstream rank
                             adios_MPI_Send (recv_buff, pg_sizes[i], new_rank - 1
                                      ,0, md->g_comm1);
