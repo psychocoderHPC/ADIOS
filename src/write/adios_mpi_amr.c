@@ -1694,7 +1694,7 @@ void adios_mpi_amr_bg_close (struct adios_file_struct * fd
                 STOP_TIMER (ADIOS_TIMER_COMM);
 
                 disp[0] = 0;
-                max_data_size = pg_size;
+                max_data_size = (pg_sizes[0] > pg_size) ? pg_sizes[0] : pg_size;
                 
                 char out[1024*32];
                 memset(out,0,1024*32);
