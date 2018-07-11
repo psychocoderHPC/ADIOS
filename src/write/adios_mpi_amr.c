@@ -1695,12 +1695,19 @@ void adios_mpi_amr_bg_close (struct adios_file_struct * fd
 
                 disp[0] = 0;
                 max_data_size = pg_size;
-
+                
+                char out[1024*32];
+                memset(out,0,1024*32);
+                snprintf(out, 1024*32, "%llu %llu", pg_size, pg_sizes[0]);
+                size_t off = strlen(out);
                 for (i = 1; i < new_group_size; i++)
                 {
+                    snprintf(out + off, 1024*32 - off, " %llu", pg_sizes[i]);
+                    off = strlen(out);
                     disp[i] = disp[i - 1] + pg_sizes[i - 1];
                     max_data_size = (pg_sizes[i] > max_data_size) ? pg_sizes[i] : max_data_size;
                 }
+                printf("%i %s\n", md->rank, out);
 
                 int nMPIrequests = max_data_size / UINT32_MAX + 1;
                 MPI_Request *requests = (MPI_Request *) malloc (nMPIrequests * sizeof (MPI_Request));
@@ -1816,7 +1823,7 @@ void adios_mpi_amr_bg_close (struct adios_file_struct * fd
                         }
                     }
                 }
-
+                
                 FREE (aggr_buff);
                 FREE (recv_buff);
                 FREE (requests);
